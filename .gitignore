@@ -1,0 +1,17 @@
+# Ignorar archivos de datos globales por seguridad
+*.csv
+*.xlsx
+*.parquet
+*.json
+
+# Ignorar todo el contenido de data/
+data/*
+
+# Excepción: permitir las subcarpetas y los archivos .gitkeep
+!data/**/
+!data/**/.gitkeep
+
+# Archivos de entorno y caché de Python
+__pycache__/
+.env
+.DS_Store

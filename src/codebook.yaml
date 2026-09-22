@@ -1,0 +1,907 @@
+meta:
+  encuesta: ATSMS26
+  descripcion: Encuesta socioambiental sobre el Centro de Transferencia (CEAMSE) y su entorno barrial
+  fuente: Google Forms (export CSV)
+  version_codebook: 0.2.0
+  convenciones:
+    tipos_de_pregunta:
+      metadata: Datos administrativos de la respuesta (no son preguntas de la encuesta).
+      identifier: Clave estable de la fila, no cambia entre descargas.
+      numeric: Valor numérico. Debe poder castear a int/float tras limpieza.
+      date: Fecha. Validar rango plausible.
+      single_choice: Opción única, formato 'LETRA. TEXTO'.
+      multi_choice: Opción múltiple ('Marque una o más'), respuestas concatenadas.
+      open_short: Pregunta abierta de respuesta corta (un solo renglón en el formulario).
+      open_long: Pregunta abierta de respuesta larga (párrafo/comentarios en el formulario).
+      open_semistructured: Texto libre que mezcla un dato estructurado con lenguaje natural. Requiere
+        un parser dedicado.
+    manejo_de_na:
+      single_choice_y_multi_choice: Vacío -> NA. 'NO SABE / NO CONTESTA' NO es NA.
+      open_short_y_open_long: Vacío -> NA. Los tokens como 'no sabe' se dejan intactos para codificación
+        cualitativa.
+      na_tokens_sugeridos:
+      - ''
+      - no sabe
+      - no sabe.
+      - ns/nc
+      - n/a
+      - no contesta
+      - 'no'
+      - ninguna
+      - ninguno
+      - no aplica
+      - '-'
+      advertencia: Esta lista es un punto de partida, no una regla automática ciega.
+    notas_de_calidad_detectadas:
+    - 'Columna ''fecha_encuesta'': valor ''15/7/1997'' es un error de tipeo evidente (probablemente 2026).
+      Validar rango de fechas plausible antes de aceptar.'
+    - 'Columna ''encuestador'': nombres inconsistentes para la misma persona (ej. ''Lucía Veiras'' vs
+      ''lucia'', ''Guadalupe'' vs ''Guadalupe Pino''). Requiere tabla de normalización manual encuestador
+      -> nombre canónico.'
+    - 'Columna ''cuadras_al_centro_transferencia'': mezcla números limpios (''4''), con unidad (''50m''),
+      con calificadores (''no sabe, pero a 12 cuadras'') y basura (''kjhoino'').'
+    - Algunas preguntas de opción única (ej. situacion_laboral) tienen al menos un caso con más de una
+      letra marcada. Se procesan combinadas.
+columnas:
+- index: 0
+  code: marca_temporal
+  header_original: Marca temporal
+  type: metadata
+  descripcion: Timestamp de envío del formulario (distinto de la fecha real de la encuesta).
+- index: 1
+  code: fecha_encuesta
+  header_original: Fecha de realización de esta encuesta
+  type: date
+  descripcion: Fecha en que se hizo la encuesta en el territorio.
+  formato_detectado: d/m/YYYY sin ceros a la izquierda
+  notas: Ver anomalía '15/7/1997' en notas_de_calidad_detectadas.
+- index: 2
+  code: encuestador
+  header_original: Nombre de la Encuestadora
+  type: metadata
+  descripcion: Nombre de quien releva la encuesta.
+  notas: Normalizar variantes del mismo nombre antes de usar para analizar por encuestador.
+- index: 3
+  code: domicilio
+  header_original: Domicilio donde se realiza la encuesta (Calle / Altura o N° de puerta / Entre qué calles
+    / Pasillo / Tira / Manzana)
+  type: open_short
+  descripcion: Dirección en formato libre, mezcla calle+altura, entrecalles, tiras/manzanas de villa.
+- index: 4
+  code: zona_distancia_ct
+  header_original: Distancia del CT
+  type: single_choice
+  keep_code: true
+  descripcion: Zona de distancia al Centro de Transferencia y si está dentro o fuera del recorrido de
+    camiones. Generada por el instrumento de muestreo, no la responde el encuestado.
+  options:
+  - codigo: C1P0
+    texto: entre 0 y 300 m del CT y FUERA del recorrido de camiones
+  - codigo: C1P1
+    texto: entre 0 y 300 m del CT y DENTRO del recorrido de camiones
+  - codigo: C2P0
+    texto: entre 301 y 600 m del CT y FUERA del recorrido de camiones
+  - codigo: C2P1
+    texto: entre 301 y 600 m del CT y DENTRO del recorrido de camiones
+  - codigo: C3P0
+    texto: entre 601 y 900 m del CT y FUERA del recorrido de camiones
+  - codigo: C3P1
+    texto: entre 601 y 900 m del CT y DENTRO del recorrido de camiones
+  - codigo: C4P0
+    texto: entre 901 y 1200 m del CT y FUERA del recorrido de camiones
+  - codigo: C4P1
+    texto: entre 901 y 1200 m del CT y DENTRO del recorrido de camiones
+  - codigo: C5P0
+    texto: entre 1201 y 1500 m del CT y FUERA del recorrido de camiones
+  - codigo: C5P1
+    texto: entre 1201 y 1500 m del CT y DENTRO del recorrido de camiones
+- index: 5
+  code: edad
+  header_original: 01. EDAD
+  type: numeric
+- index: 6
+  code: genero
+  header_original: 02. GÉNERO
+  type: single_choice
+  options:
+  - codigo: A
+    texto: FEMENINO
+  - codigo: B
+    texto: MASCULINO
+  - codigo: C
+    texto: OTRO
+- index: 7
+  code: estudia_actualmente
+  header_original: 03. ¿ESTUDIA ACTUALMENTE?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: SI
+  - codigo: B
+    texto: 'NO'
+- index: 8
+  code: max_nivel_estudios
+  header_original: 04. ¿CUÁL ES SU MÁXIMO NIVEL DE ESTUDIOS ALCANZADO?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: PRIMARIO
+  - codigo: B
+    texto: SECUNDARIO INCOMPLETO
+  - codigo: C
+    texto: SECUNDARIO COMPLETO
+  - codigo: D
+    texto: TERCIARIO O UNIVERSITARIO INCOMPLETO
+  - codigo: E
+    texto: TERCIARIO O UNIVERSITARIO COMPLETO
+- index: 9
+  code: situacion_laboral
+  header_original: 05. ¿EN QUÉ SITUACIÓN LABORAL SE ENCUENTRA ACTUALMENTE?
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: TRABAJO EN BLANCO
+  - codigo: B
+    texto: TRABAJO INFORMAL
+  - codigo: C
+    texto: MONOTRIBUTISTA
+  - codigo: D
+    texto: DESOCUPADO
+- index: 10
+  code: rubro_trabajo_blanco
+  header_original: 05 / A. ¿En qué rubro -Trabajo en Blanco-?
+  type: open_short
+  parent_code: situacion_laboral
+  parent_option: A
+- index: 11
+  code: rubro_trabajo_informal
+  header_original: 05 / B. ¿En qué rubro -Trabajo Informal-?
+  type: open_short
+  parent_code: situacion_laboral
+  parent_option: B
+- index: 12
+  code: rubro_monotributista
+  header_original: 05 / C. ¿En qué rubro -Monotributista-?
+  type: open_short
+  parent_code: situacion_laboral
+  parent_option: C
+- index: 13
+  code: beneficiario_programa_social
+  header_original: 06. Actualmente ¿es beneficiario de algún programa social proveniente del Gobierno
+    Nacional?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: 'NO'
+  - codigo: B
+    texto: SI
+- index: 14
+  code: cual_programa_social
+  header_original: 06 / B. ¿De cuál programa social es beneficiario?
+  type: open_short
+  parent_code: beneficiario_programa_social
+  parent_option: B
+- index: 15
+  code: conoce_organizaciones_sociales
+  header_original: 07. ¿Conoce alguna de estas organizaciones sociales que se encuentra en el barrio?
+    (Marque una o más respuestas)
+  type: open_semistructured
+  options:
+  - codigo: A
+    texto: COMEDOR COMUNITARIO
+  - codigo: B
+    texto: CENTRO CULTURAL
+  - codigo: C
+    texto: ASAMBLEA BARRIAL
+  - codigo: D
+    texto: BACHILLERATO POPULAR
+  - codigo: E
+    texto: ORGANIZACIÓN SIN FINES DE LUCRO (ONG)
+  - codigo: F
+    texto: NO SABE / NO CONTESTA
+  parser_hint: multi_choice_with_other
+  notas: Maneja tanto las opciones cerradas como el campo 'Otros' de Google Forms.
+- index: 16
+  code: participa_organizaciones
+  header_original: 08. ¿Participa en alguna de estas organizaciones?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: SI
+  - codigo: B
+    texto: 'NO'
+- index: 17
+  code: motivos_sanitarios_frecuentes
+  header_original: 09. ¿Cuáles son los motivos sanitarios de consulta más frecuentes? (Marque una o más
+    respuestas)
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: ALERGIAS EN LA PIEL
+  - codigo: B
+    texto: PROBLEMAS RESPIRATORIOS
+  - codigo: C
+    texto: VISTA IRRITADA
+  - codigo: D
+    texto: DIARREA RECURRENTE
+  - codigo: E
+    texto: RABIA
+  - codigo: F
+    texto: LEPTOSPIROSIS
+  - codigo: G
+    texto: TÉTANOS
+  - codigo: H
+    texto: TOS
+  - codigo: I
+    texto: NINGUNO DE LOS ANTERIORES
+  - codigo: J
+    texto: OTRO (especifique)
+- index: 18
+  code: otro_motivo_sanitario
+  header_original: 09 / J. Especifique otro motivo sanitario de consulta frecuente
+  type: open_short
+  parent_code: motivos_sanitarios_frecuentes
+  parent_option: J
+- index: 19
+  code: lugar_consulta_medica
+  header_original: 10. Ante la necesidad de una consulta médica asiste a ... (Marque una o más respuestas)
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: HOSPITAL PÚBLICO
+  - codigo: B
+    texto: CENTRO COMUNITARIO DE SALUD (CESAC)
+  - codigo: C
+    texto: CLÍNICA MÉDICA / HOSPITAL / SANATORIO PRIVADO
+  - codigo: D
+    texto: OTRO
+- index: 20
+  code: cual_hospital_publico
+  header_original: 10 / A. ¿A cuál Hospital Público asiste?
+  type: open_short
+  parent_code: lugar_consulta_medica
+  parent_option: A
+- index: 21
+  code: cual_cesac
+  header_original: 10 / B. ¿A cuál CESAC asiste?
+  type: open_short
+  parent_code: lugar_consulta_medica
+  parent_option: B
+- index: 22
+  code: cual_clinica_privada
+  header_original: 10 / C. ¿A cuál Clinica / Hospital / Sanatorio privado asiste?
+  type: open_short
+  parent_code: lugar_consulta_medica
+  parent_option: C
+- index: 23
+  code: calidad_aire
+  header_original: 11. ¿Cómo evalúa la calidad del aire en su barrio?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: BUENO
+  - codigo: B
+    texto: REGULAR
+  - codigo: C
+    texto: MALO
+  - codigo: D
+    texto: NO SABE / NO CONTESTA
+- index: 24
+  code: fuentes_contaminacion_aire
+  header_original: 12. En su opinión ¿cuáles son las principales fuentes de contaminación del aire en
+    su barrio? (Marque una o más respuestas)
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: TRÁNSITO VEHICULAR
+  - codigo: B
+    texto: ACTIVIDAD INDUSTRIAL
+  - codigo: C
+    texto: OBRAS EN CONSTRUCCIÓN
+  - codigo: D
+    texto: CENTRO DE TRANSFERENCIA DEL CEAMSE
+  - codigo: E
+    texto: FALTA DE ESPACIOS VERDES
+  - codigo: F
+    texto: NO SABE / NO CONTESTA
+  - codigo: G
+    texto: OTRO (especifique)
+- index: 25
+  code: otra_fuente_contaminacion_aire
+  header_original: 12 / G. ¿Qué otra fuente de contaminación principal considera que hay en su barrio?
+  type: open_short
+  parent_code: fuentes_contaminacion_aire
+  parent_option: G
+- index: 26
+  code: evento_extraordinario_aire
+  header_original: 13. ¿Recuerda algún evento extraordinario que haya afectado la calidad del aire en
+    su barrio?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: 'NO'
+  - codigo: B
+    texto: SI ¿cuál?
+- index: 27
+  code: detalle_evento_extraordinario_aire
+  header_original: '13 / B. El /los EVENTO/S EXTRAORDINARIO/S que afectó/aron la calidad del aire en el
+    barrio fue / fueron: '
+  type: open_short
+  parent_code: evento_extraordinario_aire
+  parent_option: B
+- index: 28
+  code: conoce_zonas_inundables
+  header_original: 14. ¿Conoce lugares del barrio dónde se estanque el agua o se inunde cuando llueve?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: 'NO'
+  - codigo: B
+    texto: SI ¿dónde?
+- index: 29
+  code: donde_inunda
+  header_original: 14/ B. ¿Dónde se inunda o estanca el agua cuando llueve?
+  type: open_short
+  parent_code: conoce_zonas_inundables
+  parent_option: B
+- index: 30
+  code: cambia_olor_zanjas_lluvia
+  header_original: 15. En los días de lluvia ¿cambia el olor de las zanjas y pozos ciegos?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: 'NO'
+  - codigo: B
+    texto: SI (describa)
+- index: 31
+  code: como_es_olor_zanjas_lluvia
+  header_original: '15 / B. El olor de las zanjas y pozos ciegos en los días de lluvia, es:'
+  type: open_long
+  parent_code: cambia_olor_zanjas_lluvia
+  parent_option: B
+- index: 32
+  code: institucion_emergencia_inundacion
+  header_original: 16. Ante una emergencia vinculada a las inundaciones ¿a qué institución recurriría?  (Marque
+    una o más respuestas)
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: BOMBEROS
+  - codigo: B
+    texto: SAME - EMERGENCIAS
+  - codigo: C
+    texto: INSTITUTO DE VIVIENDA DE LA CIUDAD (IVC)
+  - codigo: D
+    texto: DEFENSA CIVIL - EMERGENCIAS
+  - codigo: E
+    texto: NO SABE / NO CONTESTA
+  - codigo: F
+    texto: OTRO (especifique)
+- index: 33
+  code: otra_institucion_emergencia_inundacion
+  header_original: 16 / F. ¿A qué OTRA institución recurriría en caso de una emergencia por inundaciones?
+  type: open_short
+  parent_code: institucion_emergencia_inundacion
+  parent_option: F
+- index: 34
+  code: fuentes_contaminacion_sonora
+  header_original: 17. En su opinión ¿cuáles son las principales fuentes de contaminación sonora en el
+    barrio?  (Marque una o más respuestas)
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: OBRAS EN CONSTRUCCIÓN
+  - codigo: B
+    texto: ACTIVIDAD INDUSTRIAL
+  - codigo: C
+    texto: CAMIONES RECOLECTORES DE RESIDUOS
+  - codigo: D
+    texto: CENTRO DE TRANSFERENCIA DEL CEAMSE
+  - codigo: E
+    texto: TRANSPORTE PÚBLICO
+  - codigo: F
+    texto: OTRO (especifique)
+- index: 35
+  code: otra_fuente_contaminacion_sonora
+  header_original: 17 / F. ¿Qué OTRA/s fuente/s de contaminación sonora considera que hay en en barrio?
+  type: open_short
+  parent_code: fuentes_contaminacion_sonora
+  parent_option: F
+- index: 36
+  code: momento_mayor_ruido_percibido
+  header_original: 18. ¿En qué momento del día se perciben con mayor intensidad los ruidos?  (Marque una
+    o más respuestas)
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: A LA MAÑANA
+  - codigo: B
+    texto: A LA TARDE
+  - codigo: C
+    texto: A LA NOCHE
+  - codigo: D
+    texto: NO SABE / NO CONTESTA
+- index: 37
+  code: fuentes_congestion_transito
+  header_original: 19. En su opinión ¿cuáles son las principales fuentes de congestión del tránsito en
+    el barrio?  (Marque una o más respuestas)
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: TRANSPORTE PÚBLICO
+  - codigo: B
+    texto: VEHÍCULOS PARTICULARES
+  - codigo: C
+    texto: CAMIONES PESADOS
+  - codigo: D
+    texto: OTRO (especifique)
+- index: 38
+  code: otra_fuente_congestion_transito
+  header_original: 19 / D. ¿Qué OTRA/s fuente/s de congestión del tránsito se presenta/n en el barrio?
+  type: open_short
+  parent_code: fuentes_congestion_transito
+  parent_option: D
+- index: 39
+  code: horarios_mayor_circulacion_vial
+  header_original: 20. ¿Cuáles son los horarios de mayor circulación vial en su barrio?
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: A LA MAÑANA
+  - codigo: B
+    texto: A LA TARDE
+  - codigo: C
+    texto: A LA NOCHE
+  - codigo: D
+    texto: NO SABE / NO CONTESTA
+- index: 40
+  code: frecuencia_accidentes_transito
+  header_original: 21. En su opinión ¿con qué frecuencia ocurren accidentes de tránsito en el barrio?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: POCO FRECUENTE
+  - codigo: B
+    texto: FRECUENTE
+  - codigo: C
+    texto: MUY FRECUENTE
+- index: 41
+  code: comentarios_accidentes_transito
+  header_original: 21 / Comentarios sobre la frecuencia de los accidentes de tránsito en el barrio
+  type: open_long
+  notas: Ligada temáticamente a frecuencia_accidentes_transito.
+- index: 42
+  code: donde_deposita_residuos_domicilio
+  header_original: 22. ¿En dónde deposita los residuos que genera en su domicilio?
+  type: open_short
+  notas: Sin opciones predefinidas en el formulario.
+- index: 43
+  code: hay_contenedores_en_cuadra
+  header_original: 23. En la cuadra de su vivienda o lugar dónde desarrolla su actividad ¿hay contenedores
+    de residuos?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: SI
+  - codigo: B
+    texto: NO (indicar dónde hay)
+- index: 44
+  code: cuadras_a_contenedor_mas_cercano
+  header_original: 23 / B. Si NO hay contenedores de residuos en la cuadra de su casa o del lugar donde
+    desarrolla su actividad ¿a cuántas cuadras de éstos se encuentra el contenedor más cercano?
+  type: open_semistructured
+  parent_code: hay_contenedores_en_cuadra
+  parent_option: B
+  parser_hint: Extraer número de cuadras si está presente.
+- index: 45
+  code: dificultades_sistema_contenedores
+  header_original: 24. ¿Cuál de estos aspectos considera una dificultad en el sistema de contenedores?  (Marque
+    una o más respuestas)
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: GENERAN MAL OLOR
+  - codigo: B
+    texto: HAY POCOS CONTENEDORES
+  - codigo: C
+    texto: SE DESBORDAN DE RESIDUOS
+  - codigo: D
+    texto: ENTORPECEN LA CIRCULACIÓN DE PEATONES
+  - codigo: E
+    texto: OTROS (especifique)
+- index: 46
+  code: otro_aspecto_dificultad_contenedores
+  header_original: 24 / E. ¿Que aspecto no listado considera una dificultad en el sistema de contenedores?
+  type: open_short
+  parent_code: dificultades_sistema_contenedores
+  parent_option: E
+- index: 47
+  code: frecuencia_camion_recolector
+  header_original: 25. ¿Con qué frecuencia pasa el camión recolector de residuos?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: MÁS DE UNA VEZ A LA SEMANA
+  - codigo: B
+    texto: UNA VEZ A LA SEMANA
+  - codigo: C
+    texto: MENOS DE UNA VEZ A LA SEMANA
+  - codigo: D
+    texto: NO PASA EL SERVICIO DE RECOLECCIÓN DE RESIDUOS
+- index: 48
+  code: conoce_cooperativa_cartoneros
+  header_original: 26. ¿Conoce alguna cooperativa de cartoneros que trabaje en el barrio?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: SI
+  - codigo: B
+    texto: 'NO'
+- index: 49
+  code: tareas_cooperativa_cartoneros
+  header_original: 27. ¿Qué tipos de tareas realizan?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: RECOLECCIÓN DE RESIDUOS RECICLABLES
+  - codigo: B
+    texto: LIMPIEZA DE CALLES
+  - codigo: C
+    texto: OTRO (especifique)
+- index: 50
+  code: otro_tipo_tarea_cooperativa
+  header_original: 27 / C. ¿Qué OTRO tipo de tareas realiza la cooperativa de cartoneros que trabaja en
+    el barrio?
+  type: open_short
+  parent_code: tareas_cooperativa_cartoneros
+  parent_option: C
+- index: 51
+  code: realiza_separacion_residuos
+  header_original: 28. ¿Usted realiza algún tipo de separación de residuos?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: 'NO'
+  - codigo: B
+    texto: SI (especifique)
+- index: 52
+  code: tipo_separacion_residuos
+  header_original: 28 / B. ¿Qué tipo de separación de residuos realiza?
+  type: open_short
+  parent_code: realiza_separacion_residuos
+  parent_option: B
+- index: 53
+  code: donde_deposita_reciclables
+  header_original: 29. ¿Dónde deposita los residuos reciclables?
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: CONTENEDORES VERDES UBICADOS EN LAS CALLES
+  - codigo: B
+    texto: SE LOS ENTREGA A COOPERATIVAS DE CARTONEROS
+  - codigo: C
+    texto: LOS LLEVA HASTA "PUNTOS VERDES"
+  - codigo: D
+    texto: OTRO (especifique)
+- index: 54
+  code: otro_sitio_reciclables
+  header_original: 29 / D. ¿En qué OTRO sitio deposita usted los residuos reciclables?
+  type: open_short
+  parent_code: donde_deposita_reciclables
+  parent_option: D
+- index: 55
+  code: evaluacion_barrido_limpieza
+  header_original: 30. ¿Cómo evaluaría el servicio de barrido y limpieza de calles de su cuadra?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: INSUFICIENTE
+  - codigo: B
+    texto: SUFICIENTE
+  - codigo: C
+    texto: MUY BUENO
+  - codigo: D
+    texto: NO PASA EL BARRENDERO POR MI CUADRA
+- index: 56
+  code: reclamo_manejo_residuos
+  header_original: 31. ¿Alguna vez realizó algún reclamo vinculado al manejo de residuos?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: 'NO'
+  - codigo: B
+    texto: SI (especifique motivo y a qué institución)
+- index: 57
+  code: motivo_reclamo_residuos
+  header_original: 31 / B. ¿Cuál fue el motivo del reclamo y en qué institución lo hizo?
+  type: open_long
+  parent_code: reclamo_manejo_residuos
+  parent_option: B
+- index: 58
+  code: pelea_vecino_basura
+  header_original: 32. ¿Ha tenido alguna pelea con algún vecino por motivo de la basura?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: 'NO'
+  - codigo: B
+    texto: SI (especifique)
+- index: 59
+  code: motivo_pelea_vecino_basura
+  header_original: 32 / B. ¿Por que motivo se peleó con algún vecino en relación con el tema de la basura?
+  type: open_long
+  parent_code: pelea_vecino_basura
+  parent_option: B
+- index: 60
+  code: conoce_centro_transferencia
+  header_original: 33. ¿Conoce el Centro de Transferencia operado por CEAMSE ubicado en su barrio?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: SI
+  - codigo: B
+    texto: 'NO'
+- index: 61
+  code: cuadras_al_centro_transferencia
+  header_original: 34. ¿A cuántas cuadras del Centro de Transferencia vive o desarrolla su actividad?
+  type: open_semistructured
+  parser_hint: Mezcla números limpios, con unidad, calificadores y basura.
+- index: 62
+  code: conoce_actividades_centro_transferencia
+  header_original: 35. ¿Conoce las actividades que se realizan en el Centro de Transferencia?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: 'NO'
+  - codigo: B
+    texto: SI (especifique)
+- index: 63
+  code: actividades_conocidas_centro_transferencia
+  header_original: 35 / B. ¿Qué actividades del Centro de Transferencia conoce usted?
+  type: open_long
+  parent_code: conoce_actividades_centro_transferencia
+  parent_option: B
+- index: 64
+  code: momento_transito_camiones_ceamse
+  header_original: 36. ¿En qué momento del día hay mayor tránsito de camiones del CEAMSE?
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: A LA MAÑANA
+  - codigo: B
+    texto: A LA TARDE
+  - codigo: C
+    texto: A LA NOCHE
+  - codigo: D
+    texto: NO SABE / NO CONTESTA
+- index: 65
+  code: hay_otro_tipo_camiones
+  header_original: 37. ¿Hay otro tipo de camiones que transitan por la zona?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: 'NO'
+  - codigo: B
+    texto: SI (especifique)
+- index: 66
+  code: tipo_otros_camiones
+  header_original: 37 / B. ¿Qué otro tipo de camiones -que no sean de CEAMSE- transitan por la zona?
+  type: open_short
+  parent_code: hay_otro_tipo_camiones
+  parent_option: B
+- index: 67
+  code: afectacion_transito_camiones_ceamse
+  header_original: 38. ¿Qué tanto le afecta el tránsito de camiones de CEAMSE?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: INDIFERENTE
+  - codigo: B
+    texto: MOLESTIA LEVE
+  - codigo: C
+    texto: MOLESTIA GRAVE
+  - codigo: D
+    texto: MOLESTIA MUY GRAVE
+- index: 68
+  code: comentario_molestias_transito_camiones
+  header_original: 38 / ¿Tiene algo para comentar sobre las molestias que produce el tránsito de camiones
+    de CEAMSE?
+  type: open_long
+  notas: Ligada temáticamente a afectacion_transito_camiones_ceamse.
+- index: 69
+  code: sintio_olores_centro_transferencia
+  header_original: 39. ¿Sintió alguna vez olores provenientes del Centro de Transferencia?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: SI
+  - codigo: B
+    texto: 'NO'
+- index: 70
+  code: momento_mayor_olores_percibidos
+  header_original: 40. ¿Hay algún momento del día en que se perciban con más intensidad estos olores?
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: A LA MAÑANA
+  - codigo: B
+    texto: A LA TARDE
+  - codigo: C
+    texto: A LA NOCHE
+  - codigo: D
+    texto: INDIFERENTE
+- index: 71
+  code: afectacion_olores_centro_transferencia
+  header_original: 41. ¿Cómo le afectan los olores provenientes del Centro de Transferencia?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: INDIFERENTE
+  - codigo: B
+    texto: MOLESTIA LEVE
+  - codigo: C
+    texto: MOLESTIA GRAVE
+  - codigo: D
+    texto: MOLESTIA INTOLERABLE
+- index: 72
+  code: especifique_afectacion_olores
+  header_original: 41 / Especifique mejor cómo se produce esta afectación
+  type: open_long
+  notas: Ligada temáticamente a afectacion_olores_centro_transferencia.
+- index: 73
+  code: sintio_ruidos_centro_transferencia
+  header_original: 42. ¿Alguna vez sintió ruidos del Centro de Transferencia?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: SI
+  - codigo: B
+    texto: 'NO'
+- index: 74
+  code: momento_mayor_ruidos_centro_percibidos
+  header_original: 43. ¿En que momento del día se sienten con más intensidad estos ruidos?
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: A LA MAÑANA
+  - codigo: B
+    texto: A LA TARDE
+  - codigo: C
+    texto: A LA NOCHE
+  - codigo: D
+    texto: INDIFERENTE
+- index: 75
+  code: afectacion_ruidos_centro_transferencia
+  header_original: 44. ¿Cómo le resultan estos ruidos?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: INDIFERENTES
+  - codigo: B
+    texto: MOLESTIA LEVE
+  - codigo: C
+    texto: MOLESTIA GRAVE
+  - codigo: D
+    texto: MOLESTIA INTOLERABLE
+- index: 76
+  code: indique_afectacion_ruidos
+  header_original: 44 / Indique más específicamente como lo afectan estos ruidos
+  type: open_long
+  notas: Ligada temáticamente a afectacion_ruidos_centro_transferencia.
+- index: 77
+  code: sintio_vibraciones
+  header_original: 45. ¿Alguna vez sintió vibraciones en su casa o lugar donde desarrolla su actividad?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: SI
+  - codigo: B
+    texto: 'NO'
+- index: 78
+  code: origen_vibraciones
+  header_original: 46. ¿De dónde piensa que provienen estas vibraciones?
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: DE ACTIVIDADES DENTRO DEL CENTRO DE TRANSFERENCIA
+  - codigo: B
+    texto: DE LA CIRCULACIÓN DE CAMIONES
+  - codigo: C
+    texto: NO SABE / NO CONTESTA
+  - codigo: D
+    texto: OTRAS POSIBILIDADES (especifique)
+- index: 79
+  code: otras_fuentes_vibraciones
+  header_original: 46 / ¿De que otras fuentes o POSIBILIDADES -diferentes de las listadas- piensa que
+    provienen las vibraciones que usted siente en su casa o lugar donde desarrolla su actividad?
+  type: open_short
+  parent_code: origen_vibraciones
+  parent_option: D
+- index: 80
+  code: momento_mayor_vibraciones_percibidas
+  header_original: 47. ¿Hay algún momento del día en que se siente más la intensidad de las vibraciones?
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: A LA MAÑANA
+  - codigo: B
+    texto: A LA TARDE
+  - codigo: C
+    texto: A LA NOCHE
+  - codigo: D
+    texto: INDIFERENTE
+- index: 81
+  code: afectacion_vibraciones
+  header_original: 48. ¿Cómo le afectan las vibraciones?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: INDIFERENTE
+  - codigo: B
+    texto: MOLESTIA LEVE
+  - codigo: C
+    texto: MOLESTIA GRAVE
+  - codigo: D
+    texto: MOLESTIA INTOLERABLE
+- index: 82
+  code: actividades_afectadas_por_vibraciones
+  header_original: 48 / ¿En qué actividades o circunstancias le afectan concretamente las vibraciones?
+  type: open_long
+  notas: Ligada temáticamente a afectacion_vibraciones.
+- index: 83
+  code: beneficios_centro_transferencia
+  header_original: 49. En su opinión ¿cuáles pueden ser los beneficios del Centro de Transferencia en
+    el barrio?
+  type: multi_choice
+  options:
+  - codigo: A
+    texto: MEJOR ILUMINACIÓN
+  - codigo: B
+    texto: MAYOR SEGURIDAD
+  - codigo: C
+    texto: MAYOR HIGIENE
+  - codigo: D
+    texto: NO SABE / NO CONTESTA
+  - codigo: E
+    texto: OTRO (especifique)
+- index: 84
+  code: otro_beneficio_centro_transferencia
+  header_original: 49 / E. ¿Qué OTRO beneficio considera que implica tener el Centro de Transferencia
+    en el barrio?
+  type: open_short
+  parent_code: beneficios_centro_transferencia
+  parent_option: E
+- index: 85
+  code: consulto_ceamse
+  header_original: 50. ¿Usted ha consultado alguna vez a CEAMSE para informarse sobre las actividades
+    del Centro de Transferencia?
+  type: single_choice
+  options:
+  - codigo: A
+    texto: 'NO'
+  - codigo: B
+    texto: SI (especifique)
+- index: 86
+  code: motivo_consulta_ceamse
+  header_original: 50 / B. ¿Por qué motivo ha consultado a CEAMSE sobre las actividades del Centro de
+    Transferencia?
+  type: open_long
+  parent_code: consulto_ceamse
+  parent_option: B
+- index: 87
+  code: identificador
+  header_original: Identificador
+  type: identifier
+  descripcion: Clave estable por encuestado/a, usar como PK en todas las tablas derivadas.
+- index: 88
+  code: CT
+  header_original: CENTRO DE TRANSFERENCIA
+  type: single_choice
+  descripcion: Centro de Transferencia de referencia
+  options:
+  - codigo: FLORES
+    texto: FLORES
+  - codigo: POMPEYA - ZAVALETA
+    texto: POMPEYA - ZAVALETA
+  - codigo: COLEGIALES
+    texto: COLEGIALES
