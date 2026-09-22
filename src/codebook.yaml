@@ -905,3 +905,19 @@ columnas:
     texto: POMPEYA - ZAVALETA
   - codigo: COLEGIALES
     texto: COLEGIALES
+- index: 89
+  code: seccion
+  header_original: Sección
+  type: single_choice
+  descripcion: Sección
+  options:
+  - codigo: S1
+    texto: S1
+  - codigo: S2
+    texto: S2
+  - codigo: S3
+    texto: S3
+  - codigo: S4
+    texto: S4
+  - codigo: S5
+    texto: S5

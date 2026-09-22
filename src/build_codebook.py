@@ -322,6 +322,16 @@ add(88, "CT", "CENTRO DE TRANSFERENCIA", "single_choice",
         oc("COLEGIALES", "COLEGIALES")
     ])
 
+add(89, "seccion", "Sección", "single_choice",
+    descripcion="Sección",
+    options=[
+        oc("S1", "S1"),
+        oc("S2", "S2"),
+        oc("S3", "S3"),
+        oc("S4", "S4"),
+        oc("S5", "S5"),
+    ])
+
 codebook = {"meta": meta, "columnas": columnas}
 
 with open("codebook.yaml", "w", encoding="utf-8") as f:

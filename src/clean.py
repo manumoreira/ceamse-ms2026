@@ -169,9 +169,9 @@ def parse_free_text(raw: str, col: dict, log: QualityLog, ident: str):
     return text
 
 
-_CUADRAS_M_RE = re.compile(r"(\d+)\s*m\b")
-_CUADRAS_TXT_RE = re.compile(r"(\d+)\s*cuadras?")
-_CUADRAS_SOLO_NUM_RE = re.compile(r"^(\d+)$")
+_CUADRAS_M_RE = re.compile(r"(\d+(?:,\d+)?)\s*m\b")
+_CUADRAS_TXT_RE = re.compile(r"(\d+(?:,\d+)?)\s*cuadras?")
+_CUADRAS_SOLO_NUM_RE = re.compile(r"^(\d+(?:,\d+)?)$")
 _NO_SABE_RE = re.compile(r"no sabe|no se\b", re.IGNORECASE)
 
 _NUM_WORDS = {
@@ -201,15 +201,21 @@ def parse_semistructured_cuadras(raw: str, col: dict, log: QualityLog, ident: st
 
     m = _CUADRAS_M_RE.search(low)
     if m:
-        return {"valor": int(m.group(1)), "unidad": "metros", "no_sabe": no_sabe, "texto_crudo": text}
+        val_str = m.group(1).replace(",", ".")
+        valor = float(val_str) if "." in val_str else int(val_str)
+        return {"valor": valor, "unidad": "metros", "no_sabe": no_sabe, "texto_crudo": text}
 
     m = _CUADRAS_TXT_RE.search(low)
     if m:
-        return {"valor": int(m.group(1)), "unidad": "cuadras", "no_sabe": no_sabe, "texto_crudo": text}
+        val_str = m.group(1).replace(",", ".")
+        valor = float(val_str) if "." in val_str else int(val_str)
+        return {"valor": valor, "unidad": "cuadras", "no_sabe": no_sabe, "texto_crudo": text}
 
     m = _CUADRAS_SOLO_NUM_RE.match(text)
     if m:
-        return {"valor": int(m.group(1)), "unidad": "cuadras", "no_sabe": no_sabe, "texto_crudo": text}
+        val_str = m.group(1).replace(",", ".")
+        valor = float(val_str) if "." in val_str else int(val_str)
+        return {"valor": valor, "unidad": "cuadras", "no_sabe": no_sabe, "texto_crudo": text}
 
     m = _CUADRAS_WORD_RE.search(low)
     if m:
@@ -441,7 +447,24 @@ def clean_dataframe(df_raw: pd.DataFrame, codebook: dict) -> tuple[pd.DataFrame,
 
         clean_rows.append(clean_row)
 
-    df_clean = pd.DataFrame(clean_rows).set_index("identificador")
+    df_clean = pd.DataFrame(clean_rows)
+
+    if "identificador" in df_clean.columns:
+        # 1. Convertir a string, limpiar espacios y rellenar nulos
+        df_clean["identificador"] = df_clean["identificador"].fillna("").astype(str).str.strip()
+        
+        # 2. Rellenar los que vinieron vacíos con un prefijo y el número de fila original
+        mask_invalid = df_clean["identificador"] == ""
+        df_clean.loc[mask_invalid, "identificador"] = "ID_AUTO_" + df_clean[mask_invalid].index.astype(str)
+        
+        # 3. Resolver duplicados (conserva el primero, le agrega sufijo al resto)
+        mask_dupes = df_clean.duplicated(subset=["identificador"], keep="first")
+        if mask_dupes.any():
+            df_clean.loc[mask_dupes, "identificador"] = df_clean.loc[mask_dupes, "identificador"] + "_DUP_" + df_clean[mask_dupes].index.astype(str)
+
+    # Finalmente, seteamos el índice seguro
+    df_clean = df_clean.set_index("identificador")
+    
     return df_clean, log.to_frame()
 
 

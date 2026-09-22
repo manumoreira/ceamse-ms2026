@@ -107,6 +107,21 @@ def transform_data(df_clean: pd.DataFrame, codebook: dict) -> tuple[pd.DataFrame
                     df_dummies = extract_dummies(df_clean[opciones_col], code, col.get("options", []), keep_code)
                     for dummy_col in df_dummies.columns:
                         closed_data[dummy_col] = df_dummies[dummy_col]
+                        
+                    # NUEVO: Generar filas despivotadas (melt) para las opciones de la semiestructurada
+                    for ident, val_list in df_clean[opciones_col].items():
+                        if isinstance(val_list, (list, tuple, np.ndarray)):
+                            for val_code in val_list:
+                                # Buscamos el texto de esa opción
+                                texto = next((opt["texto"] for opt in col.get("options", []) if opt["codigo"] == val_code), val_code)
+                                label = val_code if keep_code else texto
+                                
+                                melted_rows.append({
+                                    "identificador": ident,
+                                    "pregunta_codigo": code,
+                                    "pregunta_texto": col["header_original"],
+                                    "opcion_texto": label
+                                })
                 
                 if otros_col in df_clean.columns:
                     open_data[code] = df_clean[otros_col]
@@ -144,11 +159,16 @@ def main():
 
     df_closed, df_open, df_melted = transform_data(df_clean, codebook)
 
-    # Extrae 'C' seguido de un dígito (ej: 'C1')
-    df_closed["distancia_ct_C"] = df_closed["zona_distancia_ct"].str.extract(r'(C\d)') 
-    # Extrae 'P' seguido de un dígito (ej: 'P0')
-    df_closed["distancia_ct_P"] = df_closed["zona_distancia_ct"].str.extract(r'(P\d)')
+    df_closed["distancia_ct_C"] = df_closed["zona_distancia_ct"].str.extract(r'(C\d)', expand=False) 
+    df_closed["distancia_ct_P"] = df_closed["zona_distancia_ct"].str.extract(r'(P\d)', expand=False)
 
+    col_seccion = "seccion"
+    if col_seccion in df_closed.columns:
+        seccion_extr = df_closed[col_seccion].astype(str).str.extract(r'(S\d)', expand=False)
+        df_closed["segmento"] = seccion_extr + "-" + df_closed["distancia_ct_C"]
+
+    df_closed["edad"] = df_closed["edad"].astype("Int64")
+    
     # Filtramos las columnas que NO tienen " | " en su nombre
     columnas_base = [col for col in df_closed.columns if " | " not in col]
     
@@ -159,10 +179,10 @@ def main():
     closed_path = outdir / "respuestas_cerradas.csv"
     open_path = outdir / "respuestas_abiertas.csv"
     multiples_path = outdir / "respuestas_multiples.csv"
-    
-    df_closed.to_csv(closed_path, index=True)
-    df_open.to_csv(open_path, index=True)
-    df_melted.to_csv(multiples_path, index=False)
+
+    df_closed.to_csv(closed_path, index=True, decimal=",")
+    df_open.to_csv(open_path, index=True, decimal=",")
+    df_melted.to_csv(multiples_path, index=False, decimal=",")
 
     print(f"Transformación exitosa.")
     print(f"-> {closed_path} ({len(df_closed.columns)} columnas numéricas/categóricas)")
