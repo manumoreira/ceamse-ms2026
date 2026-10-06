@@ -16,7 +16,7 @@ meta = {
     "encuesta": "ATSMS26",
     "descripcion": "Encuesta socioambiental sobre el Centro de Transferencia (CEAMSE) y su entorno barrial",
     "fuente": "Google Forms (export CSV)",
-    "version_codebook": "0.2.0",
+    "version_codebook": "0.2.1",
     "convenciones": {
         "tipos_de_pregunta": {
             "metadata": "Datos administrativos de la respuesta (no son preguntas de la encuesta).",
@@ -49,20 +49,22 @@ meta = {
 # ---------------------------------------------------------------------------
 columnas = []
 
-def add(idx, code, header, tipo, **kw):
+def add(idx, code, header, tipo, required=False, **kw):
     entry = {"index": idx, "code": code, "header_original": header, "type": tipo}
+    if required:
+        entry["required"] = True
     entry.update(kw)
     columnas.append(entry)
 
 add(0, "marca_temporal", "Marca temporal", "metadata",
     descripcion="Timestamp de envío del formulario (distinto de la fecha real de la encuesta).")
 
-add(1, "fecha_encuesta", "Fecha de realización de esta encuesta", "date",
+add(1, "fecha_encuesta", "Fecha de realización de esta encuesta", "date", required=True,
     descripcion="Fecha en que se hizo la encuesta en el territorio.",
     formato_detectado="d/m/YYYY sin ceros a la izquierda",
     notas="Ver anomalía '15/7/1997' en notas_de_calidad_detectadas.")
 
-add(2, "encuestador", "Nombre de la Encuestadora", "metadata",
+add(2, "encuestador", "Nombre de la Encuestadora", "metadata", required=True,
     descripcion="Nombre de quien releva la encuesta.",
     notas="Normalizar variantes del mismo nombre antes de usar para analizar por encuestador.")
 
@@ -85,19 +87,19 @@ add(4, "zona_distancia_ct", "Distancia del CT", "single_choice",
         oc("C5P1", "entre 1201 y 1500 m del CT y DENTRO del recorrido de camiones"),
     ])
 
-add(5, "edad", "01. EDAD", "numeric")
+add(5, "edad", "01. EDAD", "numeric", required = True)
 
-add(6, "genero", "02. GÉNERO", "single_choice",
+add(6, "genero", "02. GÉNERO", "single_choice", required = True,
     options=[oc("A", "FEMENINO"), oc("B", "MASCULINO"), oc("C", "OTRO")])
 
 add(7, "estudia_actualmente", "03. ¿ESTUDIA ACTUALMENTE?", "single_choice",
     options=[oc("A", "SI"), oc("B", "NO")])
 
-add(8, "max_nivel_estudios", "04. ¿CUÁL ES SU MÁXIMO NIVEL DE ESTUDIOS ALCANZADO?", "single_choice",
+add(8, "max_nivel_estudios", "04. ¿CUÁL ES SU MÁXIMO NIVEL DE ESTUDIOS ALCANZADO?", "single_choice", required=True,
     options=[oc("A", "PRIMARIO"), oc("B", "SECUNDARIO INCOMPLETO"), oc("C", "SECUNDARIO COMPLETO"),
               oc("D", "TERCIARIO O UNIVERSITARIO INCOMPLETO"), oc("E", "TERCIARIO O UNIVERSITARIO COMPLETO")])
 
-add(9, "situacion_laboral", "05. ¿EN QUÉ SITUACIÓN LABORAL SE ENCUENTRA ACTUALMENTE?", "multi_choice",
+add(9, "situacion_laboral", "05. ¿EN QUÉ SITUACIÓN LABORAL SE ENCUENTRA ACTUALMENTE?", "multi_choice", required=True,
     options=[oc("A", "TRABAJO EN BLANCO"), oc("B", "TRABAJO INFORMAL"), oc("C", "MONOTRIBUTISTA"), oc("D", "DESOCUPADO")])
 
 add(10, "rubro_trabajo_blanco", "05 / A. ¿En qué rubro -Trabajo en Blanco-?", "open_short",
@@ -119,7 +121,7 @@ add(15, "conoce_organizaciones_sociales", "07. ¿Conoce alguna de estas organiza
     parser_hint="multi_choice_with_other",
     notas="Maneja tanto las opciones cerradas como el campo 'Otros' de Google Forms.")
 
-add(16, "participa_organizaciones", "08. ¿Participa en alguna de estas organizaciones?", "single_choice",
+add(16, "participa_organizaciones", "08. ¿Participa en alguna de estas organizaciones?", "single_choice", required=True,
     options=[oc("A", "SI"), oc("B", "NO")])
 
 add(17, "motivos_sanitarios_frecuentes", "09. ¿Cuáles son los motivos sanitarios de consulta más frecuentes? (Marque una o más respuestas)", "multi_choice",
@@ -139,10 +141,10 @@ add(21, "cual_cesac", "10 / B. ¿A cuál CESAC asiste?", "open_short",
 add(22, "cual_clinica_privada", "10 / C. ¿A cuál Clinica / Hospital / Sanatorio privado asiste?", "open_short",
     parent_code="lugar_consulta_medica", parent_option="C")
 
-add(23, "calidad_aire", "11. ¿Cómo evalúa la calidad del aire en su barrio?", "single_choice",
+add(23, "calidad_aire", "11. ¿Cómo evalúa la calidad del aire en su barrio?", "single_choice", required=True,
     options=[oc("A", "BUENO"), oc("B", "REGULAR"), oc("C", "MALO"), oc("D", "NO SABE / NO CONTESTA")])
 
-add(24, "fuentes_contaminacion_aire", "12. En su opinión ¿cuáles son las principales fuentes de contaminación del aire en su barrio? (Marque una o más respuestas)", "multi_choice",
+add(24, "fuentes_contaminacion_aire", "12. En su opinión ¿cuáles son las principales fuentes de contaminación del aire en su barrio? (Marque una o más respuestas)", "multi_choice", required=True,
     options=[oc("A", "TRÁNSITO VEHICULAR"), oc("B", "ACTIVIDAD INDUSTRIAL"), oc("C", "OBRAS EN CONSTRUCCIÓN"),
               oc("D", "CENTRO DE TRANSFERENCIA DEL CEAMSE"), oc("E", "FALTA DE ESPACIOS VERDES"),
               oc("F", "NO SABE / NO CONTESTA"), oc("G", "OTRO (especifique)")])
@@ -154,23 +156,23 @@ add(26, "evento_extraordinario_aire", "13. ¿Recuerda algún evento extraordinar
 add(27, "detalle_evento_extraordinario_aire", "13 / B. El /los EVENTO/S EXTRAORDINARIO/S que afectó/aron la calidad del aire en el barrio fue / fueron: ", "open_short",
     parent_code="evento_extraordinario_aire", parent_option="B")
 
-add(28, "conoce_zonas_inundables", "14. ¿Conoce lugares del barrio dónde se estanque el agua o se inunde cuando llueve?", "single_choice",
+add(28, "conoce_zonas_inundables", "14. ¿Conoce lugares del barrio dónde se estanque el agua o se inunde cuando llueve?", "single_choice", required=True,
     options=[oc("A", "NO"), oc("B", "SI ¿dónde?")])
 add(29, "donde_inunda", "14/ B. ¿Dónde se inunda o estanca el agua cuando llueve?", "open_short",
     parent_code="conoce_zonas_inundables", parent_option="B")
 
-add(30, "cambia_olor_zanjas_lluvia", "15. En los días de lluvia ¿cambia el olor de las zanjas y pozos ciegos?", "single_choice",
+add(30, "cambia_olor_zanjas_lluvia", "15. En los días de lluvia ¿cambia el olor de las zanjas y pozos ciegos?", "single_choice", required=True,
     options=[oc("A", "NO"), oc("B", "SI (describa)")])
 add(31, "como_es_olor_zanjas_lluvia", "15 / B. El olor de las zanjas y pozos ciegos en los días de lluvia, es:", "open_long",
     parent_code="cambia_olor_zanjas_lluvia", parent_option="B")
 
-add(32, "institucion_emergencia_inundacion", "16. Ante una emergencia vinculada a las inundaciones ¿a qué institución recurriría?  (Marque una o más respuestas)", "multi_choice",
+add(32, "institucion_emergencia_inundacion", "16. Ante una emergencia vinculada a las inundaciones ¿a qué institución recurriría?  (Marque una o más respuestas)", "multi_choice", required=True,
     options=[oc("A", "BOMBEROS"), oc("B", "SAME - EMERGENCIAS"), oc("C", "INSTITUTO DE VIVIENDA DE LA CIUDAD (IVC)"),
               oc("D", "DEFENSA CIVIL - EMERGENCIAS"), oc("E", "NO SABE / NO CONTESTA"), oc("F", "OTRO (especifique)")])
 add(33, "otra_institucion_emergencia_inundacion", "16 / F. ¿A qué OTRA institución recurriría en caso de una emergencia por inundaciones?", "open_short",
     parent_code="institucion_emergencia_inundacion", parent_option="F")
 
-add(34, "fuentes_contaminacion_sonora", "17. En su opinión ¿cuáles son las principales fuentes de contaminación sonora en el barrio?  (Marque una o más respuestas)", "multi_choice",
+add(34, "fuentes_contaminacion_sonora", "17. En su opinión ¿cuáles son las principales fuentes de contaminación sonora en el barrio?  (Marque una o más respuestas)", "multi_choice", required=True,
     options=[oc("A", "OBRAS EN CONSTRUCCIÓN"), oc("B", "ACTIVIDAD INDUSTRIAL"), oc("C", "CAMIONES RECOLECTORES DE RESIDUOS"),
               oc("D", "CENTRO DE TRANSFERENCIA DEL CEAMSE"), oc("E", "TRANSPORTE PÚBLICO"), oc("F", "OTRO (especifique)")])
 add(35, "otra_fuente_contaminacion_sonora", "17 / F. ¿Qué OTRA/s fuente/s de contaminación sonora considera que hay en en barrio?", "open_short",
@@ -184,18 +186,18 @@ add(37, "fuentes_congestion_transito", "19. En su opinión ¿cuáles son las pri
 add(38, "otra_fuente_congestion_transito", "19 / D. ¿Qué OTRA/s fuente/s de congestión del tránsito se presenta/n en el barrio?", "open_short",
     parent_code="fuentes_congestion_transito", parent_option="D")
 
-add(39, "horarios_mayor_circulacion_vial", "20. ¿Cuáles son los horarios de mayor circulación vial en su barrio?", "multi_choice",
+add(39, "horarios_mayor_circulacion_vial", "20. ¿Cuáles son los horarios de mayor circulación vial en su barrio?", "multi_choice", required=True,
     options=[oc("A", "A LA MAÑANA"), oc("B", "A LA TARDE"), oc("C", "A LA NOCHE"), oc("D", "NO SABE / NO CONTESTA")])
 
-add(40, "frecuencia_accidentes_transito", "21. En su opinión ¿con qué frecuencia ocurren accidentes de tránsito en el barrio?", "single_choice",
+add(40, "frecuencia_accidentes_transito", "21. En su opinión ¿con qué frecuencia ocurren accidentes de tránsito en el barrio?", "single_choice", required=True,
     options=[oc("A", "POCO FRECUENTE"), oc("B", "FRECUENTE"), oc("C", "MUY FRECUENTE")])
 add(41, "comentarios_accidentes_transito", "21 / Comentarios sobre la frecuencia de los accidentes de tránsito en el barrio", "open_long",
     notas="Ligada temáticamente a frecuencia_accidentes_transito.")
 
-add(42, "donde_deposita_residuos_domicilio", "22. ¿En dónde deposita los residuos que genera en su domicilio?", "open_short",
+add(42, "donde_deposita_residuos_domicilio", "22. ¿En dónde deposita los residuos que genera en su domicilio?", "open_short", required=True,
     notas="Sin opciones predefinidas en el formulario.")
 
-add(43, "hay_contenedores_en_cuadra", "23. En la cuadra de su vivienda o lugar dónde desarrolla su actividad ¿hay contenedores de residuos?", "single_choice",
+add(43, "hay_contenedores_en_cuadra", "23. En la cuadra de su vivienda o lugar dónde desarrolla su actividad ¿hay contenedores de residuos?", "single_choice", required=True,
     options=[oc("A", "SI"), oc("B", "NO (indicar dónde hay)")])
 add(44, "cuadras_a_contenedor_mas_cercano", "23 / B. Si NO hay contenedores de residuos en la cuadra de su casa o del lugar donde desarrolla su actividad ¿a cuántas cuadras de éstos se encuentra el contenedor más cercano?", "open_semistructured",
     parent_code="hay_contenedores_en_cuadra", parent_option="B",
@@ -207,39 +209,39 @@ add(45, "dificultades_sistema_contenedores", "24. ¿Cuál de estos aspectos cons
 add(46, "otro_aspecto_dificultad_contenedores", "24 / E. ¿Que aspecto no listado considera una dificultad en el sistema de contenedores?", "open_short",
     parent_code="dificultades_sistema_contenedores", parent_option="E")
 
-add(47, "frecuencia_camion_recolector", "25. ¿Con qué frecuencia pasa el camión recolector de residuos?", "single_choice",
+add(47, "frecuencia_camion_recolector", "25. ¿Con qué frecuencia pasa el camión recolector de residuos?", "single_choice", required=True,
     options=[oc("A", "MÁS DE UNA VEZ A LA SEMANA"), oc("B", "UNA VEZ A LA SEMANA"), oc("C", "MENOS DE UNA VEZ A LA SEMANA"),
               oc("D", "NO PASA EL SERVICIO DE RECOLECCIÓN DE RESIDUOS")])
 
-add(48, "conoce_cooperativa_cartoneros", "26. ¿Conoce alguna cooperativa de cartoneros que trabaje en el barrio?", "single_choice",
+add(48, "conoce_cooperativa_cartoneros", "26. ¿Conoce alguna cooperativa de cartoneros que trabaje en el barrio?", "single_choice", required=True,
     options=[oc("A", "SI"), oc("B", "NO")])
 
-add(49, "tareas_cooperativa_cartoneros", "27. ¿Qué tipos de tareas realizan?", "single_choice",
+add(49, "tareas_cooperativa_cartoneros", "27. ¿Qué tipos de tareas realizan?", "single_choice", required=True,
     options=[oc("A", "RECOLECCIÓN DE RESIDUOS RECICLABLES"), oc("B", "LIMPIEZA DE CALLES"), oc("C", "OTRO (especifique)")])
 add(50, "otro_tipo_tarea_cooperativa", "27 / C. ¿Qué OTRO tipo de tareas realiza la cooperativa de cartoneros que trabaja en el barrio?", "open_short",
     parent_code="tareas_cooperativa_cartoneros", parent_option="C")
 
-add(51, "realiza_separacion_residuos", "28. ¿Usted realiza algún tipo de separación de residuos?", "single_choice",
+add(51, "realiza_separacion_residuos", "28. ¿Usted realiza algún tipo de separación de residuos?", "single_choice", required=True,
     options=[oc("A", "NO"), oc("B", "SI (especifique)")])
 add(52, "tipo_separacion_residuos", "28 / B. ¿Qué tipo de separación de residuos realiza?", "open_short",
     parent_code="realiza_separacion_residuos", parent_option="B")
 
-add(53, "donde_deposita_reciclables", "29. ¿Dónde deposita los residuos reciclables?", "multi_choice",
+add(53, "donde_deposita_reciclables", "29. ¿Dónde deposita los residuos reciclables?", "multi_choice", required=True,
     options=[oc("A", "CONTENEDORES VERDES UBICADOS EN LAS CALLES"), oc("B", "SE LOS ENTREGA A COOPERATIVAS DE CARTONEROS"),
               oc("C", 'LOS LLEVA HASTA "PUNTOS VERDES"'), oc("D", "OTRO (especifique)")])
 add(54, "otro_sitio_reciclables", "29 / D. ¿En qué OTRO sitio deposita usted los residuos reciclables?", "open_short",
     parent_code="donde_deposita_reciclables", parent_option="D")
 
-add(55, "evaluacion_barrido_limpieza", "30. ¿Cómo evaluaría el servicio de barrido y limpieza de calles de su cuadra?", "single_choice",
+add(55, "evaluacion_barrido_limpieza", "30. ¿Cómo evaluaría el servicio de barrido y limpieza de calles de su cuadra?", "single_choice", required=True,
     options=[oc("A", "INSUFICIENTE"), oc("B", "SUFICIENTE"), oc("C", "MUY BUENO"),
               oc("D", "NO PASA EL BARRENDERO POR MI CUADRA")])
 
-add(56, "reclamo_manejo_residuos", "31. ¿Alguna vez realizó algún reclamo vinculado al manejo de residuos?", "single_choice",
+add(56, "reclamo_manejo_residuos", "31. ¿Alguna vez realizó algún reclamo vinculado al manejo de residuos?", "single_choice", required=True,
     options=[oc("A", "NO"), oc("B", "SI (especifique motivo y a qué institución)")])
 add(57, "motivo_reclamo_residuos", "31 / B. ¿Cuál fue el motivo del reclamo y en qué institución lo hizo?", "open_long",
     parent_code="reclamo_manejo_residuos", parent_option="B")
 
-add(58, "pelea_vecino_basura", "32. ¿Ha tenido alguna pelea con algún vecino por motivo de la basura?", "single_choice",
+add(58, "pelea_vecino_basura", "32. ¿Ha tenido alguna pelea con algún vecino por motivo de la basura?", "single_choice", required=True,
     options=[oc("A", "NO"), oc("B", "SI (especifique)")])
 add(59, "motivo_pelea_vecino_basura", "32 / B. ¿Por que motivo se peleó con algún vecino en relación con el tema de la basura?", "open_long",
     parent_code="pelea_vecino_basura", parent_option="B")
@@ -250,43 +252,43 @@ add(60, "conoce_centro_transferencia", "33. ¿Conoce el Centro de Transferencia 
 add(61, "cuadras_al_centro_transferencia", "34. ¿A cuántas cuadras del Centro de Transferencia vive o desarrolla su actividad?", "open_semistructured",
     parser_hint="Mezcla números limpios, con unidad, calificadores y basura.")
 
-add(62, "conoce_actividades_centro_transferencia", "35. ¿Conoce las actividades que se realizan en el Centro de Transferencia?", "single_choice",
+add(62, "conoce_actividades_centro_transferencia", "35. ¿Conoce las actividades que se realizan en el Centro de Transferencia?", "single_choice", required=True,
     options=[oc("A", "NO"), oc("B", "SI (especifique)")])
 add(63, "actividades_conocidas_centro_transferencia", "35 / B. ¿Qué actividades del Centro de Transferencia conoce usted?", "open_long",
     parent_code="conoce_actividades_centro_transferencia", parent_option="B")
 
-add(64, "momento_transito_camiones_ceamse", "36. ¿En qué momento del día hay mayor tránsito de camiones del CEAMSE?", "multi_choice",
+add(64, "momento_transito_camiones_ceamse", "36. ¿En qué momento del día hay mayor tránsito de camiones del CEAMSE?", "multi_choice", required=True,
     options=[oc("A", "A LA MAÑANA"), oc("B", "A LA TARDE"), oc("C", "A LA NOCHE"), oc("D", "NO SABE / NO CONTESTA")])
 
-add(65, "hay_otro_tipo_camiones", "37. ¿Hay otro tipo de camiones que transitan por la zona?", "single_choice",
+add(65, "hay_otro_tipo_camiones", "37. ¿Hay otro tipo de camiones que transitan por la zona?", "single_choice", required=True,
     options=[oc("A", "NO"), oc("B", "SI (especifique)")])
 add(66, "tipo_otros_camiones", "37 / B. ¿Qué otro tipo de camiones -que no sean de CEAMSE- transitan por la zona?", "open_short",
     parent_code="hay_otro_tipo_camiones", parent_option="B")
 
-add(67, "afectacion_transito_camiones_ceamse", "38. ¿Qué tanto le afecta el tránsito de camiones de CEAMSE?", "single_choice",
+add(67, "afectacion_transito_camiones_ceamse", "38. ¿Qué tanto le afecta el tránsito de camiones de CEAMSE?", "single_choice", required=True,
     options=[oc("A", "INDIFERENTE"), oc("B", "MOLESTIA LEVE"), oc("C", "MOLESTIA GRAVE"), oc("D", "MOLESTIA MUY GRAVE")])
 add(68, "comentario_molestias_transito_camiones", "38 / ¿Tiene algo para comentar sobre las molestias que produce el tránsito de camiones de CEAMSE?", "open_long",
     notas="Ligada temáticamente a afectacion_transito_camiones_ceamse.")
 
-add(69, "sintio_olores_centro_transferencia", "39. ¿Sintió alguna vez olores provenientes del Centro de Transferencia?", "single_choice",
+add(69, "sintio_olores_centro_transferencia", "39. ¿Sintió alguna vez olores provenientes del Centro de Transferencia?", "single_choice", required=True,
     options=[oc("A", "SI"), oc("B", "NO")])
-add(70, "momento_mayor_olores_percibidos", "40. ¿Hay algún momento del día en que se perciban con más intensidad estos olores?", "multi_choice",
+add(70, "momento_mayor_olores_percibidos", "40. ¿Hay algún momento del día en que se perciban con más intensidad estos olores?", "multi_choice", required=True,
     options=[oc("A", "A LA MAÑANA"), oc("B", "A LA TARDE"), oc("C", "A LA NOCHE"), oc("D", "INDIFERENTE")])
-add(71, "afectacion_olores_centro_transferencia", "41. ¿Cómo le afectan los olores provenientes del Centro de Transferencia?", "single_choice",
+add(71, "afectacion_olores_centro_transferencia", "41. ¿Cómo le afectan los olores provenientes del Centro de Transferencia?", "single_choice", required=True,
     options=[oc("A", "INDIFERENTE"), oc("B", "MOLESTIA LEVE"), oc("C", "MOLESTIA GRAVE"), oc("D", "MOLESTIA INTOLERABLE")])
 add(72, "especifique_afectacion_olores", "41 / Especifique mejor cómo se produce esta afectación", "open_long",
     notas="Ligada temáticamente a afectacion_olores_centro_transferencia.")
 
-add(73, "sintio_ruidos_centro_transferencia", "42. ¿Alguna vez sintió ruidos del Centro de Transferencia?", "single_choice",
+add(73, "sintio_ruidos_centro_transferencia", "42. ¿Alguna vez sintió ruidos del Centro de Transferencia?", "single_choice", required=True,
     options=[oc("A", "SI"), oc("B", "NO")])
-add(74, "momento_mayor_ruidos_centro_percibidos", "43. ¿En que momento del día se sienten con más intensidad estos ruidos?", "multi_choice",
+add(74, "momento_mayor_ruidos_centro_percibidos", "43. ¿En que momento del día se sienten con más intensidad estos ruidos?", "multi_choice", required=True,
     options=[oc("A", "A LA MAÑANA"), oc("B", "A LA TARDE"), oc("C", "A LA NOCHE"), oc("D", "INDIFERENTE")])
-add(75, "afectacion_ruidos_centro_transferencia", "44. ¿Cómo le resultan estos ruidos?", "single_choice",
+add(75, "afectacion_ruidos_centro_transferencia", "44. ¿Cómo le resultan estos ruidos?", "single_choice", required=True,
     options=[oc("A", "INDIFERENTES"), oc("B", "MOLESTIA LEVE"), oc("C", "MOLESTIA GRAVE"), oc("D", "MOLESTIA INTOLERABLE")])
 add(76, "indique_afectacion_ruidos", "44 / Indique más específicamente como lo afectan estos ruidos", "open_long",
     notas="Ligada temáticamente a afectacion_ruidos_centro_transferencia.")
 
-add(77, "sintio_vibraciones", "45. ¿Alguna vez sintió vibraciones en su casa o lugar donde desarrolla su actividad?", "single_choice",
+add(77, "sintio_vibraciones", "45. ¿Alguna vez sintió vibraciones en su casa o lugar donde desarrolla su actividad?", "single_choice", required=True,
     options=[oc("A", "SI"), oc("B", "NO")])
 add(78, "origen_vibraciones", "46. ¿De dónde piensa que provienen estas vibraciones?", "multi_choice",
     options=[oc("A", "DE ACTIVIDADES DENTRO DEL CENTRO DE TRANSFERENCIA"), oc("B", "DE LA CIRCULACIÓN DE CAMIONES"),
@@ -300,13 +302,13 @@ add(81, "afectacion_vibraciones", "48. ¿Cómo le afectan las vibraciones?", "si
 add(82, "actividades_afectadas_por_vibraciones", "48 / ¿En qué actividades o circunstancias le afectan concretamente las vibraciones?", "open_long",
     notas="Ligada temáticamente a afectacion_vibraciones.")
 
-add(83, "beneficios_centro_transferencia", "49. En su opinión ¿cuáles pueden ser los beneficios del Centro de Transferencia en el barrio?", "multi_choice",
+add(83, "beneficios_centro_transferencia", "49. En su opinión ¿cuáles pueden ser los beneficios del Centro de Transferencia en el barrio?", "multi_choice", required=True,
     options=[oc("A", "MEJOR ILUMINACIÓN"), oc("B", "MAYOR SEGURIDAD"), oc("C", "MAYOR HIGIENE"),
               oc("D", "NO SABE / NO CONTESTA"), oc("E", "OTRO (especifique)")])
 add(84, "otro_beneficio_centro_transferencia", "49 / E. ¿Qué OTRO beneficio considera que implica tener el Centro de Transferencia en el barrio?", "open_short",
     parent_code="beneficios_centro_transferencia", parent_option="E")
 
-add(85, "consulto_ceamse", "50. ¿Usted ha consultado alguna vez a CEAMSE para informarse sobre las actividades del Centro de Transferencia?", "single_choice",
+add(85, "consulto_ceamse", "50. ¿Usted ha consultado alguna vez a CEAMSE para informarse sobre las actividades del Centro de Transferencia?", "single_choice", required=True,
     options=[oc("A", "NO"), oc("B", "SI (especifique)")])
 add(86, "motivo_consulta_ceamse", "50 / B. ¿Por qué motivo ha consultado a CEAMSE sobre las actividades del Centro de Transferencia?", "open_long",
     parent_code="consulto_ceamse", parent_option="B")
@@ -314,7 +316,7 @@ add(86, "motivo_consulta_ceamse", "50 / B. ¿Por qué motivo ha consultado a CEA
 add(87, "identificador", "Identificador", "identifier",
     descripcion="Clave estable por encuestado/a, usar como PK en todas las tablas derivadas.")
 
-add(88, "CT", "CENTRO DE TRANSFERENCIA", "single_choice",
+add(88, "CT", "CENTRO DE TRANSFERENCIA", "single_choice", required=True,
     descripcion="Centro de Transferencia de referencia",
     options=[
         oc("FLORES", "FLORES"),
@@ -322,7 +324,7 @@ add(88, "CT", "CENTRO DE TRANSFERENCIA", "single_choice",
         oc("COLEGIALES", "COLEGIALES")
     ])
 
-add(89, "seccion", "Sección", "single_choice",
+add(89, "seccion", "Sección", "single_choice", required=True,
     descripcion="Sección",
     options=[
         oc("S1", "S1"),

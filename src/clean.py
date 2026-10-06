@@ -13,7 +13,7 @@ tokens del codebook. Todo lo que no se puede interpretar con confianza queda
 registrado en el log de calidad para revisión humana, no se descarta en silencio.
 
 Uso:
-    python clean.py --input ATSMS26.csv --codebook codebook.yaml --outdir data/interim
+    python clean.py --input ATSMS26.csv --codebook codebook.yaml --outdir data/interim --geo-corrections 
 
 Salidas:
     <outdir>/clean.parquet   - tabla limpia, una fila por encuestado/a (identificador como índice)
@@ -325,6 +325,44 @@ def parse_semistructured_multichoice(raw: str, col: dict, log: QualityLog, ident
     }
 
 # ---------------------------------------------------------------------------
+# Correcciones previas a la limpieza
+# ---------------------------------------------------------------------------
+
+def _apply_geographic_corrections(df_raw: pd.DataFrame, corrections_path: str | Path) -> pd.DataFrame:
+    """
+    Reescribe la columna original de 'Sección' del formulario utilizando las 
+    coordenadas geocodificadas desde un archivo CSV externo provisto por USIG.
+    """
+    path = Path(corrections_path)
+    if not path.exists():
+        print(f"AVISO: No se encontró el archivo de correcciones geográficas en {path}.")
+        return df_raw
+        
+    # Cargamos el CSV de correcciones (separado por ;)
+    df_geo = pd.read_csv(path, sep=";", dtype=str)
+    df_geo = df_geo.dropna(subset=['ID_Zona', 'Marca_temporal'])
+    
+    # Extraemos SOLO la Sección (ej: "S2" de "S2-C3")
+    df_geo['geo_seccion'] = df_geo['ID_Zona'].str.split('-').str[0]
+    
+    # Limpiamos espacios para un cruce seguro
+    df_geo['Marca_temporal'] = df_geo['Marca_temporal'].str.strip()
+    
+    # El DF crudo puede tener el header "Marca temporal" como índice de columna, nos aseguramos de limpiarlo.
+    time_col = next((c for c in df_raw.columns if normalize_text(c) == normalize_text("Marca temporal")), None)
+    sec_col = next((c for c in df_raw.columns if normalize_text(c) == normalize_text("Sección")), None)
+    
+    if time_col and sec_col:
+        df_raw[time_col] = df_raw[time_col].astype(str).str.strip()
+        map_seccion = df_geo.set_index('Marca_temporal')['geo_seccion'].to_dict()
+        df_raw[sec_col] = df_raw[time_col].map(map_seccion).fillna(df_raw[sec_col])
+        print(f"OK - Secciones geográficas reescritas usando {path.name}")
+    else:
+        print("AVISO: No se pudieron aplicar correcciones geográficas porque faltan las columnas base en el DF crudo.")
+        
+    return df_raw
+
+# ---------------------------------------------------------------------------
 # Limpieza de una fila / de la tabla completa
 # ---------------------------------------------------------------------------
 
@@ -416,6 +454,30 @@ def clean_dataframe(df_raw: pd.DataFrame, codebook: dict) -> tuple[pd.DataFrame,
             else:
                 raise ValueError(f"Tipo de columna no soportado: {ctype} ({code})")
 
+            if col.get("required", False):
+                # Si el texto crudo está vacío, el usuario no respondió
+                if normalize_text(raw_value) == "":
+                    
+                    if "parent_code" in col:
+                        # Es obligatoria pero condicional. Veamos si se activó la condición padre.
+                        parent_code = col["parent_code"]
+                        parent_option = col["parent_option"]
+                        
+                        parent_val = clean_row.get(parent_code)
+                        if isinstance(parent_val, list):
+                            parent_letters = parent_val
+                        elif isinstance(parent_val, str):
+                            parent_letters = parent_val.split("|")
+                        else:
+                            parent_letters = []
+                            
+                        # Si la opción padre SÍ fue seleccionada, esta debería tener respuesta
+                        if parent_option in parent_letters:
+                            log.add(ident, code, "obligatoria_condicional_vacia", "N/A")
+                    else:
+                        # Es obligatoria pura y está vacía
+                        log.add(ident, code, "obligatoria_vacia", "N/A")
+
             # VALIDACIÓN DE SKIP LOGIC (Condicional)
             # 1. Invertimos la condición: solo evaluamos si la columna tiene parent_code
             if "parent_code" in col:
@@ -467,7 +529,6 @@ def clean_dataframe(df_raw: pd.DataFrame, codebook: dict) -> tuple[pd.DataFrame,
     
     return df_clean, log.to_frame()
 
-
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
@@ -477,10 +538,15 @@ def main():
     parser.add_argument("--input", required=True, help="CSV crudo exportado del formulario")
     parser.add_argument("--codebook", required=True, help="codebook.yaml")
     parser.add_argument("--outdir", required=True, help="Carpeta de salida (data/interim)")
+    parser.add_argument("--geo-corrections", required=False, help="CSV con coordenadas USIG para corregir las secciones")
     args = parser.parse_args()
 
     codebook = load_codebook(args.codebook)
     df_raw = pd.read_csv(args.input, dtype=str, keep_default_na=False)
+
+    # Inyección de las correcciones espaciales antes de la limpieza estructural
+    if args.geo_corrections:
+        df_raw = _apply_geographic_corrections(df_raw, args.geo_corrections)
 
     df_clean, df_log = clean_dataframe(df_raw, codebook)
 

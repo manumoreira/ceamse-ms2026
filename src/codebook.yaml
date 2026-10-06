@@ -2,7 +2,7 @@ meta:
   encuesta: ATSMS26
   descripcion: Encuesta socioambiental sobre el Centro de Transferencia (CEAMSE) y su entorno barrial
   fuente: Google Forms (export CSV)
-  version_codebook: 0.2.0
+  version_codebook: 0.2.1
   convenciones:
     tipos_de_pregunta:
       metadata: Datos administrativos de la respuesta (no son preguntas de la encuesta).
@@ -52,6 +52,7 @@ columnas:
   code: fecha_encuesta
   header_original: Fecha de realización de esta encuesta
   type: date
+  required: true
   descripcion: Fecha en que se hizo la encuesta en el territorio.
   formato_detectado: d/m/YYYY sin ceros a la izquierda
   notas: Ver anomalía '15/7/1997' en notas_de_calidad_detectadas.
@@ -59,6 +60,7 @@ columnas:
   code: encuestador
   header_original: Nombre de la Encuestadora
   type: metadata
+  required: true
   descripcion: Nombre de quien releva la encuesta.
   notas: Normalizar variantes del mismo nombre antes de usar para analizar por encuestador.
 - index: 3
@@ -99,10 +101,12 @@ columnas:
   code: edad
   header_original: 01. EDAD
   type: numeric
+  required: true
 - index: 6
   code: genero
   header_original: 02. GÉNERO
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: FEMENINO
@@ -123,6 +127,7 @@ columnas:
   code: max_nivel_estudios
   header_original: 04. ¿CUÁL ES SU MÁXIMO NIVEL DE ESTUDIOS ALCANZADO?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: PRIMARIO
@@ -138,6 +143,7 @@ columnas:
   code: situacion_laboral
   header_original: 05. ¿EN QUÉ SITUACIÓN LABORAL SE ENCUENTRA ACTUALMENTE?
   type: multi_choice
+  required: true
   options:
   - codigo: A
     texto: TRABAJO EN BLANCO
@@ -205,6 +211,7 @@ columnas:
   code: participa_organizaciones
   header_original: 08. ¿Participa en alguna de estas organizaciones?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: SI
@@ -277,6 +284,7 @@ columnas:
   code: calidad_aire
   header_original: 11. ¿Cómo evalúa la calidad del aire en su barrio?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: BUENO
@@ -291,6 +299,7 @@ columnas:
   header_original: 12. En su opinión ¿cuáles son las principales fuentes de contaminación del aire en
     su barrio? (Marque una o más respuestas)
   type: multi_choice
+  required: true
   options:
   - codigo: A
     texto: TRÁNSITO VEHICULAR
@@ -333,6 +342,7 @@ columnas:
   code: conoce_zonas_inundables
   header_original: 14. ¿Conoce lugares del barrio dónde se estanque el agua o se inunde cuando llueve?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: 'NO'
@@ -348,6 +358,7 @@ columnas:
   code: cambia_olor_zanjas_lluvia
   header_original: 15. En los días de lluvia ¿cambia el olor de las zanjas y pozos ciegos?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: 'NO'
@@ -364,6 +375,7 @@ columnas:
   header_original: 16. Ante una emergencia vinculada a las inundaciones ¿a qué institución recurriría?  (Marque
     una o más respuestas)
   type: multi_choice
+  required: true
   options:
   - codigo: A
     texto: BOMBEROS
@@ -388,6 +400,7 @@ columnas:
   header_original: 17. En su opinión ¿cuáles son las principales fuentes de contaminación sonora en el
     barrio?  (Marque una o más respuestas)
   type: multi_choice
+  required: true
   options:
   - codigo: A
     texto: OBRAS EN CONSTRUCCIÓN
@@ -445,6 +458,7 @@ columnas:
   code: horarios_mayor_circulacion_vial
   header_original: 20. ¿Cuáles son los horarios de mayor circulación vial en su barrio?
   type: multi_choice
+  required: true
   options:
   - codigo: A
     texto: A LA MAÑANA
@@ -458,6 +472,7 @@ columnas:
   code: frecuencia_accidentes_transito
   header_original: 21. En su opinión ¿con qué frecuencia ocurren accidentes de tránsito en el barrio?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: POCO FRECUENTE
@@ -474,12 +489,14 @@ columnas:
   code: donde_deposita_residuos_domicilio
   header_original: 22. ¿En dónde deposita los residuos que genera en su domicilio?
   type: open_short
+  required: true
   notas: Sin opciones predefinidas en el formulario.
 - index: 43
   code: hay_contenedores_en_cuadra
   header_original: 23. En la cuadra de su vivienda o lugar dónde desarrolla su actividad ¿hay contenedores
     de residuos?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: SI
@@ -519,6 +536,7 @@ columnas:
   code: frecuencia_camion_recolector
   header_original: 25. ¿Con qué frecuencia pasa el camión recolector de residuos?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: MÁS DE UNA VEZ A LA SEMANA
@@ -532,6 +550,7 @@ columnas:
   code: conoce_cooperativa_cartoneros
   header_original: 26. ¿Conoce alguna cooperativa de cartoneros que trabaje en el barrio?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: SI
@@ -541,6 +560,7 @@ columnas:
   code: tareas_cooperativa_cartoneros
   header_original: 27. ¿Qué tipos de tareas realizan?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: RECOLECCIÓN DE RESIDUOS RECICLABLES
@@ -559,6 +579,7 @@ columnas:
   code: realiza_separacion_residuos
   header_original: 28. ¿Usted realiza algún tipo de separación de residuos?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: 'NO'
@@ -574,6 +595,7 @@ columnas:
   code: donde_deposita_reciclables
   header_original: 29. ¿Dónde deposita los residuos reciclables?
   type: multi_choice
+  required: true
   options:
   - codigo: A
     texto: CONTENEDORES VERDES UBICADOS EN LAS CALLES
@@ -593,6 +615,7 @@ columnas:
   code: evaluacion_barrido_limpieza
   header_original: 30. ¿Cómo evaluaría el servicio de barrido y limpieza de calles de su cuadra?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: INSUFICIENTE
@@ -606,6 +629,7 @@ columnas:
   code: reclamo_manejo_residuos
   header_original: 31. ¿Alguna vez realizó algún reclamo vinculado al manejo de residuos?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: 'NO'
@@ -621,6 +645,7 @@ columnas:
   code: pelea_vecino_basura
   header_original: 32. ¿Ha tenido alguna pelea con algún vecino por motivo de la basura?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: 'NO'
@@ -650,6 +675,7 @@ columnas:
   code: conoce_actividades_centro_transferencia
   header_original: 35. ¿Conoce las actividades que se realizan en el Centro de Transferencia?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: 'NO'
@@ -665,6 +691,7 @@ columnas:
   code: momento_transito_camiones_ceamse
   header_original: 36. ¿En qué momento del día hay mayor tránsito de camiones del CEAMSE?
   type: multi_choice
+  required: true
   options:
   - codigo: A
     texto: A LA MAÑANA
@@ -678,6 +705,7 @@ columnas:
   code: hay_otro_tipo_camiones
   header_original: 37. ¿Hay otro tipo de camiones que transitan por la zona?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: 'NO'
@@ -693,6 +721,7 @@ columnas:
   code: afectacion_transito_camiones_ceamse
   header_original: 38. ¿Qué tanto le afecta el tránsito de camiones de CEAMSE?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: INDIFERENTE
@@ -712,6 +741,7 @@ columnas:
   code: sintio_olores_centro_transferencia
   header_original: 39. ¿Sintió alguna vez olores provenientes del Centro de Transferencia?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: SI
@@ -721,6 +751,7 @@ columnas:
   code: momento_mayor_olores_percibidos
   header_original: 40. ¿Hay algún momento del día en que se perciban con más intensidad estos olores?
   type: multi_choice
+  required: true
   options:
   - codigo: A
     texto: A LA MAÑANA
@@ -734,6 +765,7 @@ columnas:
   code: afectacion_olores_centro_transferencia
   header_original: 41. ¿Cómo le afectan los olores provenientes del Centro de Transferencia?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: INDIFERENTE
@@ -752,6 +784,7 @@ columnas:
   code: sintio_ruidos_centro_transferencia
   header_original: 42. ¿Alguna vez sintió ruidos del Centro de Transferencia?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: SI
@@ -761,6 +794,7 @@ columnas:
   code: momento_mayor_ruidos_centro_percibidos
   header_original: 43. ¿En que momento del día se sienten con más intensidad estos ruidos?
   type: multi_choice
+  required: true
   options:
   - codigo: A
     texto: A LA MAÑANA
@@ -774,6 +808,7 @@ columnas:
   code: afectacion_ruidos_centro_transferencia
   header_original: 44. ¿Cómo le resultan estos ruidos?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: INDIFERENTES
@@ -792,6 +827,7 @@ columnas:
   code: sintio_vibraciones
   header_original: 45. ¿Alguna vez sintió vibraciones en su casa o lugar donde desarrolla su actividad?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: SI
@@ -853,6 +889,7 @@ columnas:
   header_original: 49. En su opinión ¿cuáles pueden ser los beneficios del Centro de Transferencia en
     el barrio?
   type: multi_choice
+  required: true
   options:
   - codigo: A
     texto: MEJOR ILUMINACIÓN
@@ -876,6 +913,7 @@ columnas:
   header_original: 50. ¿Usted ha consultado alguna vez a CEAMSE para informarse sobre las actividades
     del Centro de Transferencia?
   type: single_choice
+  required: true
   options:
   - codigo: A
     texto: 'NO'
@@ -897,6 +935,7 @@ columnas:
   code: CT
   header_original: CENTRO DE TRANSFERENCIA
   type: single_choice
+  required: true
   descripcion: Centro de Transferencia de referencia
   options:
   - codigo: FLORES
@@ -909,6 +948,7 @@ columnas:
   code: seccion
   header_original: Sección
   type: single_choice
+  required: true
   descripcion: Sección
   options:
   - codigo: S1
