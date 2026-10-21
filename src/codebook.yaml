@@ -961,3 +961,13 @@ columnas:
     texto: S4
   - codigo: S5
     texto: S5
+- index: 90
+  code: latitud
+  header_original: Latitud
+  type: numeric
+  descripcion: Latitud geocodificada
+- index: 91
+  code: longitud
+  header_original: Longitud
+  type: numeric
+  descripcion: Longitud geocodificada

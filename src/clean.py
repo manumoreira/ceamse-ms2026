@@ -340,10 +340,14 @@ def _apply_geographic_corrections(df_raw: pd.DataFrame, corrections_path: str | 
         
     # Cargamos el CSV de correcciones (separado por ;)
     df_geo = pd.read_csv(path, sep=";", dtype=str)
-    df_geo = df_geo.dropna(subset=['ID_Zona', 'Marca_temporal'])
+    df_geo = df_geo.dropna(subset=['Segmento_Final', 'Marca_temporal'])
+
+    # Normalizamos decimales de las coordenadas
+    df_geo['Latitud'] = df_geo['Latitud'].str.replace(',', '.')
+    df_geo['Longitud'] = df_geo['Longitud'].str.replace(',', '.')
     
-    # Extraemos SOLO la Sección (ej: "S2" de "S2-C3")
-    df_geo['geo_seccion'] = df_geo['ID_Zona'].str.split('-').str[0]
+    # Extraemos la Sección (ej: "S2" de "S2-C3")
+    df_geo['geo_seccion'] = df_geo['Segmento_Final'].str.split('-').str[0]
     
     # Limpiamos espacios para un cruce seguro
     df_geo['Marca_temporal'] = df_geo['Marca_temporal'].str.strip()
@@ -353,10 +357,16 @@ def _apply_geographic_corrections(df_raw: pd.DataFrame, corrections_path: str | 
     sec_col = next((c for c in df_raw.columns if normalize_text(c) == normalize_text("Sección")), None)
     
     if time_col and sec_col:
+        # Corrijo secciones
         df_raw[time_col] = df_raw[time_col].astype(str).str.strip()
         map_seccion = df_geo.set_index('Marca_temporal')['geo_seccion'].to_dict()
         df_raw[sec_col] = df_raw[time_col].map(map_seccion).fillna(df_raw[sec_col])
         print(f"OK - Secciones geográficas reescritas usando {path.name}")
+        # Agrego lat lon
+        map_lat = df_geo.set_index('Marca_temporal')['Latitud'].to_dict()
+        map_lon = df_geo.set_index('Marca_temporal')['Longitud'].to_dict()
+        df_raw["Latitud"] = df_raw[time_col].map(map_lat)
+        df_raw["Longitud"] = df_raw[time_col].map(map_lon)
     else:
         print("AVISO: No se pudieron aplicar correcciones geográficas porque faltan las columnas base en el DF crudo.")
         

@@ -334,6 +334,12 @@ add(89, "seccion", "Sección", "single_choice", required=True,
         oc("S5", "S5"),
     ])
 
+add(90, "latitud", "Latitud", "numeric", 
+    descripcion="Latitud geocodificada")
+
+add(91, "longitud", "Longitud", "numeric", 
+    descripcion="Longitud geocodificada")
+
 codebook = {"meta": meta, "columnas": columnas}
 
 with open("codebook.yaml", "w", encoding="utf-8") as f:
