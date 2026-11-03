@@ -161,6 +161,7 @@ def main():
 
     df_closed["distancia_ct_C"] = df_closed["zona_distancia_ct"].str.extract(r'(C\d)', expand=False) 
     df_closed["distancia_ct_P"] = df_closed["zona_distancia_ct"].str.extract(r'(P\d)', expand=False)
+    #df_closed["circulo_dif"] = (df_closed['circulo_geo'] != df_closed['distancia_ct_C']).astype(int)
 
     col_seccion = "seccion"
     if col_seccion in df_closed.columns:
@@ -168,6 +169,22 @@ def main():
         df_closed["segmento"] = seccion_extr + "-" + df_closed["distancia_ct_C"]
 
     df_closed["edad"] = df_closed["edad"].astype("Int64")
+
+    if "circulo_geo" in df_closed.columns:
+        c_geo = df_closed["circulo_geo"]
+        c_orig = df_closed["distancia_ct_C"]
+        
+        condiciones = [
+            c_geo.isna(),
+            c_orig.isna(),
+            c_geo != c_orig
+        ]
+        
+        resultados = [
+            "FALTA_GEO", "FALTA_ORIG", "DESVIO"
+        ]
+        
+        df_closed["alerta_desvio_espacial"] = np.select(condiciones, resultados, default="OK")
     
     # Filtramos las columnas que NO tienen " | " en su nombre
     columnas_base = [col for col in df_closed.columns if " | " not in col]

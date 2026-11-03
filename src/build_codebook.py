@@ -340,6 +340,17 @@ add(90, "latitud", "Latitud", "numeric",
 add(91, "longitud", "Longitud", "numeric", 
     descripcion="Longitud geocodificada")
 
+add(92, "circulo_geo", "Circulo_Geo", "single_choice", 
+    descripcion="Circulo geocodificado",
+    options=[
+        oc("C1", "C1"),
+        oc("C2", "C2"),
+        oc("C3", "C3"),
+        oc("C4", "C4"),
+        oc("C5", "C5"),
+    ])
+
+
 codebook = {"meta": meta, "columnas": columnas}
 
 with open("codebook.yaml", "w", encoding="utf-8") as f:

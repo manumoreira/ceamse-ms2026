@@ -971,3 +971,19 @@ columnas:
   header_original: Longitud
   type: numeric
   descripcion: Longitud geocodificada
+- index: 92
+  code: circulo_geo
+  header_original: Circulo_Geo
+  type: single_choice
+  descripcion: Circulo geocodificado
+  options:
+  - codigo: C1
+    texto: C1
+  - codigo: C2
+    texto: C2
+  - codigo: C3
+    texto: C3
+  - codigo: C4
+    texto: C4
+  - codigo: C5
+    texto: C5
