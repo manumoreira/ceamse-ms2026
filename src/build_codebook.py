@@ -335,10 +335,10 @@ add(89, "seccion", "Sección", "single_choice", required=True,
     ])
 
 add(90, "latitud", "Latitud", "numeric", 
-    descripcion="Latitud geocodificada")
+    descripcion="Latitud geocodificada", injected = True)
 
 add(91, "longitud", "Longitud", "numeric", 
-    descripcion="Longitud geocodificada")
+    descripcion="Longitud geocodificada", injected = True)
 
 add(92, "circulo_geo", "Circulo_Geo", "single_choice", 
     descripcion="Circulo geocodificado",
@@ -348,7 +348,8 @@ add(92, "circulo_geo", "Circulo_Geo", "single_choice",
         oc("C3", "C3"),
         oc("C4", "C4"),
         oc("C5", "C5"),
-    ])
+    ],
+    injected = True)
 
 
 codebook = {"meta": meta, "columnas": columnas}

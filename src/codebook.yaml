@@ -966,11 +966,13 @@ columnas:
   header_original: Latitud
   type: numeric
   descripcion: Latitud geocodificada
+  injected: true
 - index: 91
   code: longitud
   header_original: Longitud
   type: numeric
   descripcion: Longitud geocodificada
+  injected: true
 - index: 92
   code: circulo_geo
   header_original: Circulo_Geo
@@ -987,3 +989,4 @@ columnas:
     texto: C4
   - codigo: C5
     texto: C5
+  injected: true

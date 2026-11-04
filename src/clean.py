@@ -55,6 +55,8 @@ def _apply_manual_corrections(df_raw: pd.DataFrame, corrections_path: str | Path
         
     df_raw[time_col] = df_raw[time_col].astype(str).str.strip()
     
+    temp_time = df_raw[time_col].astype(str).str.strip()
+
     for rule in rules:
         marca_temporal = str(rule.get("marca_temporal", "")).strip()
         accion = rule.get("accion")
@@ -63,7 +65,7 @@ def _apply_manual_corrections(df_raw: pd.DataFrame, corrections_path: str | Path
         if not marca_temporal or not accion:
             continue
             
-        mask = df_raw[time_col] == marca_temporal
+        mask = temp_time == marca_temporal
         if not mask.any():
             print(f"AVISO: No se encontró la marca temporal '{marca_temporal}' para la corrección manual.")
             continue
@@ -129,6 +131,10 @@ def clean_dataframe(df_raw: pd.DataFrame, codebook: dict) -> tuple[pd.DataFrame,
     missing_cols = []
     
     for col in codebook["columnas"]:
+        if col.get("injected", False):
+            col_mapping[col["code"]] = col["header_original"]
+            continue
+            
         expected_norm = normalize_text(col["header_original"])
         if expected_norm not in csv_headers_norm:
             missing_cols.append(col["header_original"])
@@ -243,11 +249,14 @@ def main():
     codebook = load_codebook(args.codebook)
     df_raw = pd.read_csv(args.input, dtype=str, keep_default_na=False)
 
-    if args.manual_corrections:
-        df_raw = _apply_manual_corrections(df_raw, args.manual_corrections)
-
+    # 1. Primero se inyectan los datos espaciales automáticos
     if args.geo_corrections:
         df_raw = _apply_geographic_corrections(df_raw, args.geo_corrections)
+
+    # 2. Segundo se aplican los parches manuales (la última palabra)
+    if args.manual_corrections:
+        df_raw = _apply_manual_corrections(df_raw, args.manual_corrections)
+    
     df_clean, df_log = clean_dataframe(df_raw, codebook)
 
     outdir = Path(args.outdir)
