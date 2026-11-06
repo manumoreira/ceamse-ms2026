@@ -80,18 +80,31 @@ def match_option_code(fragment: str, valid_codes: set[str]) -> str | None:
 def parse_single_choice(raw: str, col: dict, log: QualityLog, ident: str):
     text = normalize_text(raw)
     if text == "": return pd.NA
+    
     valid_codes = {o["codigo"] for o in col.get("options", [])}
     fragments = [f.strip() for f in text.split(",")]
     letters = []
+    
     for frag in fragments:
         code_found = match_option_code(frag, valid_codes)
-        if code_found: letters.append(code_found)
-        else: log.add(ident, col["code"], "fragmento_no_reconocido_como_opcion", frag)
+        if code_found: 
+            letters.append(code_found)
+        else: 
+            log.add(ident, col["code"], "fragmento_no_reconocido_como_opcion", frag)
+            
     if not letters: return pd.NA
+    
     if len(letters) > 1:
         log.add(ident, col["code"], "single_choice_con_mas_de_una_opcion_marcada", text)
         return "|".join(letters)
-    return letters[0]
+        
+    final_code = letters[0]
+    
+    mapeo = col.get("mapping", {})
+    if mapeo and final_code in mapeo:
+        return mapeo[final_code]
+        
+    return final_code
 
 def parse_multi_choice(raw: str, col: dict, log: QualityLog, ident: str):
     text = normalize_text(raw)

@@ -139,6 +139,12 @@ columnas:
     texto: TERCIARIO O UNIVERSITARIO INCOMPLETO
   - codigo: E
     texto: TERCIARIO O UNIVERSITARIO COMPLETO
+  mapping:
+    A: 1. PRIMARIO
+    B: 2. SECUNDARIO INCOMPLETO
+    C: 3. SECUNDARIO COMPLETO
+    D: 4. TERCIARIO/UNIV. INCOMPLETO
+    E: 5. TERCIARIO/UNIV. COMPLETO
 - index: 9
   code: situacion_laboral
   header_original: 05. ¿EN QUÉ SITUACIÓN LABORAL SE ENCUENTRA ACTUALMENTE?
@@ -294,6 +300,11 @@ columnas:
     texto: MALO
   - codigo: D
     texto: NO SABE / NO CONTESTA
+  mapping:
+    A: 1. BUENO
+    B: 2. REGULAR
+    C: 3. MALO
+    D: 4. NO SABE / NO CONTESTA
 - index: 24
   code: fuentes_contaminacion_aire
   header_original: 12. En su opinión ¿cuáles son las principales fuentes de contaminación del aire en

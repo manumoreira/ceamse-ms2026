@@ -97,7 +97,15 @@ add(7, "estudia_actualmente", "03. ¿ESTUDIA ACTUALMENTE?", "single_choice",
 
 add(8, "max_nivel_estudios", "04. ¿CUÁL ES SU MÁXIMO NIVEL DE ESTUDIOS ALCANZADO?", "single_choice", required=True,
     options=[oc("A", "PRIMARIO"), oc("B", "SECUNDARIO INCOMPLETO"), oc("C", "SECUNDARIO COMPLETO"),
-              oc("D", "TERCIARIO O UNIVERSITARIO INCOMPLETO"), oc("E", "TERCIARIO O UNIVERSITARIO COMPLETO")])
+             oc("D", "TERCIARIO O UNIVERSITARIO INCOMPLETO"), oc("E", "TERCIARIO O UNIVERSITARIO COMPLETO")],
+    mapping={
+        "A": "1. PRIMARIO",
+        "B": "2. SECUNDARIO INCOMPLETO",
+        "C": "3. SECUNDARIO COMPLETO",
+        "D": "4. TERCIARIO/UNIV. INCOMPLETO",
+        "E": "5. TERCIARIO/UNIV. COMPLETO"
+    }
+)
 
 add(9, "situacion_laboral", "05. ¿EN QUÉ SITUACIÓN LABORAL SE ENCUENTRA ACTUALMENTE?", "multi_choice", required=True,
     options=[oc("A", "TRABAJO EN BLANCO"), oc("B", "TRABAJO INFORMAL"), oc("C", "MONOTRIBUTISTA"), oc("D", "DESOCUPADO")])
@@ -142,7 +150,13 @@ add(22, "cual_clinica_privada", "10 / C. ¿A cuál Clinica / Hospital / Sanatori
     parent_code="lugar_consulta_medica", parent_option="C")
 
 add(23, "calidad_aire", "11. ¿Cómo evalúa la calidad del aire en su barrio?", "single_choice", required=True,
-    options=[oc("A", "BUENO"), oc("B", "REGULAR"), oc("C", "MALO"), oc("D", "NO SABE / NO CONTESTA")])
+    options=[oc("A", "BUENO"), oc("B", "REGULAR"), oc("C", "MALO"), oc("D", "NO SABE / NO CONTESTA")],
+    mapping={
+        "A": "1. BUENO",
+        "B": "2. REGULAR",
+        "C": "3. MALO",
+        "D": "4. NO SABE / NO CONTESTA"
+    })
 
 add(24, "fuentes_contaminacion_aire", "12. En su opinión ¿cuáles son las principales fuentes de contaminación del aire en su barrio? (Marque una o más respuestas)", "multi_choice", required=True,
     options=[oc("A", "TRÁNSITO VEHICULAR"), oc("B", "ACTIVIDAD INDUSTRIAL"), oc("C", "OBRAS EN CONSTRUCCIÓN"),
