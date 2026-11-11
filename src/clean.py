@@ -19,6 +19,7 @@ from pathlib import Path
 import json
 import pandas as pd
 import yaml
+import hashlib
 
 from clean_utils import (
     QualityLog, normalize_text, parse_single_choice, parse_multi_choice, 
@@ -147,9 +148,34 @@ def clean_dataframe(df_raw: pd.DataFrame, codebook: dict) -> tuple[pd.DataFrame,
         raise ValueError(error_msg)
 
     id_col_real = col_mapping["identificador"]
+    
+    df_raw[id_col_real] = df_raw[id_col_real].fillna("").astype(str).str.strip()
+    
+    mask_invalid = df_raw[id_col_real] == ""
+    mask_no_numbers = ~df_raw[id_col_real].str.contains(r'\d', regex=True)
+    mask_to_replace = mask_invalid | mask_no_numbers
+    
+    if mask_to_replace.any():
+        time_col = col_mapping.get("marca_temporal")
+        def generar_id_estable(row):
+            # Usamos la marca temporal real si existe en el codebook, sino el backup de texto
+            base_string = str(row[time_col]) if time_col and pd.notna(row.get(time_col)) else "".join(str(v) for v in row.values)
+            hash_corto = hashlib.md5(base_string.encode('utf-8')).hexdigest()[:8].upper()
+            return f"ID_AUTO_{hash_corto}"
+            
+        df_raw.loc[mask_to_replace, id_col_real] = df_raw[mask_to_replace].apply(generar_id_estable, axis=1)
+
+    mask_dupes = df_raw.duplicated(subset=[id_col_real], keep="first")
+    if mask_dupes.any():
+        conteo_secuencial = df_raw[mask_dupes].groupby(id_col_real).cumcount() + 1
+        df_raw.loc[mask_dupes, id_col_real] = (
+            df_raw.loc[mask_dupes, id_col_real] + "_DUP_" + conteo_secuencial.astype(str)
+        )
+
     clean_rows = []
     
     for _, row in df_raw.iterrows():
+
         ident = normalize_text(row[id_col_real])
         clean_row = {}
         for col in codebook["columnas"]:
@@ -224,16 +250,9 @@ def clean_dataframe(df_raw: pd.DataFrame, codebook: dict) -> tuple[pd.DataFrame,
         clean_rows.append(clean_row)
 
     df_clean = pd.DataFrame(clean_rows)
-
     if "identificador" in df_clean.columns:
-        df_clean["identificador"] = df_clean["identificador"].fillna("").astype(str).str.strip()
-        mask_invalid = df_clean["identificador"] == ""
-        df_clean.loc[mask_invalid, "identificador"] = "ID_AUTO_" + df_clean[mask_invalid].index.astype(str)
-        mask_dupes = df_clean.duplicated(subset=["identificador"], keep="first")
-        if mask_dupes.any():
-            df_clean.loc[mask_dupes, "identificador"] = df_clean.loc[mask_dupes, "identificador"] + "_DUP_" + df_clean[mask_dupes].index.astype(str)
-
-    df_clean = df_clean.set_index("identificador")
+        df_clean = df_clean.set_index("identificador")
+        
     return df_clean, log.to_frame()
 
 def main():
@@ -253,7 +272,7 @@ def main():
     if args.geo_corrections:
         df_raw = _apply_geographic_corrections(df_raw, args.geo_corrections)
 
-    # 2. Segundo se aplican los parches manuales (la última palabra)
+    # 2. Segundo se aplican los parches manuales
     if args.manual_corrections:
         df_raw = _apply_manual_corrections(df_raw, args.manual_corrections)
     
